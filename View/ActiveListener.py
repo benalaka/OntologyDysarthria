@@ -19,56 +19,58 @@ os.makedirs(output_directory, exist_ok=True)
 
 p = pyaudio.PyAudio()
 
-try:
-    while True:
-        # Create an audio stream
-        stream = p.open(format=sample_format,
-                        channels=channels,
-                        rate=fs,
-                        frames_per_buffer=chunk,
-                        input=True)
 
-        print("Listening... (Press 'Y' to stop)")
+def StartTalking():
+    try:
+        while True:
+            # Create an audio stream
+            stream = p.open(format=sample_format,
+                            channels=channels,
+                            rate=fs,
+                            frames_per_buffer=chunk,
+                            input=True)
 
-        frames = []
-        start_time = time.time()
+            print("Listening... (Press 'Y' to stop)")
 
-        stop_listening = False
+            frames = []
+            start_time = time.time()
 
-        while time.time() - start_time < 5 and not stop_listening:
-            data = stream.read(chunk)
-            frames.append(data)
+            stop_listening = False
 
-            if msvcrt.kbhit():  # Check if a key has been pressed
-                key = msvcrt.getch().decode('utf-8').upper()
-                if key == 'Y':
-                    stop_listening = True
-                    print("Stopped listening.")
+            while time.time() - start_time < 5 and not stop_listening:
+                data = stream.read(chunk)
+                frames.append(data)
 
-        # Close the audio stream
-        stream.stop_stream()
-        stream.close()
+                if msvcrt.kbhit():  # Check if a key has been pressed
+                    key = msvcrt.getch().decode('utf-8').upper()
+                    if key == 'Y':
+                        stop_listening = True
+                        print("Stopped listening.")
 
-        if not stop_listening:
-            print("Press 'Enter' to save the recording or 'C' to cancel and exit...")
-            user_input = input()
+            # Close the audio stream
+            stream.stop_stream()
+            stream.close()
 
-            if user_input == "":
-                # Save the recorded audio as a WAV file with a timestamp
-                file_name = os.path.join(output_directory, f"recording_{len(os.listdir(output_directory)) + 1}.wav")
-                wf = wave.open(file_name, "wb")
-                wf.setnchannels(channels)
-                wf.setsampwidth(p.get_sample_size(sample_format))
-                wf.setframerate(fs)
-                wf.writeframes(b"".join(frames))
-                wf.close()
+            if not stop_listening:
+                print("Press 'Enter' to save the recording or 'C' to cancel and exit...")
+                user_input = input()
 
-                print(f"Recording saved as {file_name}\n")
-            elif user_input.upper() == 'C':
-                print("Recording canceled. Exiting.")
-                break
+                if user_input == "":
+                    # Save the recorded audio as a WAV file with a timestamp
+                    file_name = os.path.join(output_directory, f"recording_{len(os.listdir(output_directory)) + 1}.wav")
+                    wf = wave.open(file_name, "wb")
+                    wf.setnchannels(channels)
+                    wf.setsampwidth(p.get_sample_size(sample_format))
+                    wf.setframerate(fs)
+                    wf.writeframes(b"".join(frames))
+                    wf.close()
 
-except KeyboardInterrupt:
-    print("Recording stopped.")
-finally:
-    p.terminate()
+                    print(f"Recording saved as {file_name}\n")
+                elif user_input.upper() == 'C':
+                    print("Recording canceled. Exiting.")
+                    break
+
+    except KeyboardInterrupt:
+        print("Recording stopped.")
+    finally:
+        p.terminate()
