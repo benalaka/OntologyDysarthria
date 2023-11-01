@@ -4,10 +4,7 @@ prompts = "Log_PhD/augmented_prompts_dataset"
 myoutput = "Log_PhD/data_subject/recognized.csv"
 
 # Import Module
-import os
-import shutil
 import speech_recognition as sr
-import csv
 import os
 
 # Folder Path

@@ -1,5 +1,3 @@
-import os
-import numpy as np
 import scipy.io.wavfile as wavfile
 from scipy.signal.windows import hamming
 import matplotlib.pyplot as plt
