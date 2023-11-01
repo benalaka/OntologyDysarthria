@@ -1,28 +1,40 @@
-path_audio = "Log_PhD/wav"
-new_path_audio = "Log_PhD/augmented_wav_dataset"
-prompts = "Log_PhD/augmented_prompts_dataset"
-myoutput = "Log_PhD/data_subject/recognized.csv"
-
 # Import Module
 import speech_recognition as sr
 import os
+import datetime
 
-# Folder Path
-path_audio = new_path_audio
-path_prompts = prompts
+# Get the current timestamp
+current_timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+final_name = current_timestamp + ".txt"
+AUDIO_DIRECTORY = "Log_PhD/active_listener/audio" \
+                  ""
+txtfile = "Log_PhD/active_listener/text/"+ final_name
 
-DIRNAME = new_path_audio
-OUTPUTFILE = myoutput
 
+def getLatestFile_Audio(directory):
+    # Get a list of all files in the directory
+    file_list = os.listdir(directory)
 
-def get_file_paths(dirname):
-    file_paths = []
-    for root, directories, files in os.walk(dirname):
-        for filename in files:
-            filepath = os.path.join(root, filename)
-            file_paths.append(filepath)
-    return file_paths
+    # Initialize variables to keep track of the latest timestamp and filename
+    latest_timestamp = None
+    latest_filename = None
 
+    # Iterate through the files in the directory
+    for filename in file_list:
+        if filename.endswith('.wav'):
+            # Extract the timestamp from the filename
+            timestamp_str = filename.split('.')[0]  # Remove the ".wav" extension
+            timestamp = timestamp_str.replace('_', ' ')
+
+            # Compare the timestamp with the latest one found so far
+            if latest_timestamp is None or timestamp > latest_timestamp:
+                latest_timestamp = timestamp
+                latest_filename = filename
+
+    # Print the latest filename
+    print("The file with the latest timestamp is:", latest_filename)
+    lname = directory + "/" + latest_filename
+    return lname
 
 def process_file(file):
     r = sr.Recognizer()
@@ -42,22 +54,14 @@ def process_file(file):
         print("File error!")
 
 
-def main():
-    files = get_file_paths(DIRNAME)  # get all file-paths of all files in dirname and subdirectories
-    for file in files:  # execute for each file
-        (filepath, ext) = os.path.splitext(file)  # get the file extension
-        file_name = os.path.basename(file)  # get the basename for writing to output file
-        full_filename = file_name.split('.')
-        txtfile = full_filename[0] + ".txt"
-        if ext == '.wav':  # only interested if extension is '.wav'
-            a = process_file(file)  # result is returned to a
-
-            with open(os.path.join(prompts, txtfile), "w") as file1:
-                try:
-                    file1.write(a)
-                except:
-                    print("File error!")
+def final_convert(file):
+    a = process_file(file)
+    with open(txtfile, "w") as file1:
+        try:
+            file1.write(a)
+            print(a)
+        except:
+            print("Could not convert audio")
 
 
-if __name__ == '__main__':
-    main()
+final_convert(getLatestFile_Audio(AUDIO_DIRECTORY))

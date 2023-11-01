@@ -29,8 +29,8 @@ y = [post.get('class') for post in posts]
 y_train = y[:int(len(posts_text) * 0.8)]
 y_test = y[int(len(posts_text) * 0.2):]
 
-my_model = "C:/Users/ochie/PycharmProjects/OntologyLearningPipeline_PhD/Log_PhD/data_subject/gradient_boosting_model.pkl"
-my_model2 = "C:/Users/ochie/PycharmProjects/OntologyLearningPipeline_PhD/Log_PhD/data_subject/question_classifier_model.pkl"
+my_model = "C:/Users/ochie/PycharmProjects/OntologyLearningPipeline_PhD/OntologyDysarthria/Log_PhD/data_subject/gradient_boosting_model.pkl"
+my_model2 = "C:/Users/ochie/PycharmProjects/OntologyLearningPipeline_PhD/OntologyDysarthria/Log_PhD/data_subject/question_classifier_model.pkl"
 
 loaded_gb = joblib.load(my_model)
 
