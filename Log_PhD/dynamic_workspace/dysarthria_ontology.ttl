@@ -1,7 +1,0 @@
-@prefix ex: <http://dysarthria.org/> .
-
-ex:dysarthria_0 a ex:Discourse ;
-    ex:person_thing ex:It ;
-    ex:relation ex:provides_for ;
-    ex:the_object ex:dormitories .
-
