@@ -34,7 +34,7 @@ def calculate_pitch(wav_file):
 
 def getPitch(file):
     pitch = calculate_pitch(file)
-    # print(f"Pitch of {file}: {pitch} Hz")
+    print(f"Speaker's Pitch: {pitch} Hz")
     return pitch
 
 
@@ -56,13 +56,13 @@ def get_volume_in_time(wav_file):
     mag = np.abs(S)
     power = mag ** 2
     rms = np.sqrt(np.mean(power, axis=1))
-    # print(rms)
     return rms
 
 
 def getAverageVolumeInTime(file):
     v_i_t = get_volume_in_time(file)
     avg_rms = np.mean(v_i_t)
+    print(f"Speaker's Average Volume: {avg_rms} Hz")
     return avg_rms
 
 

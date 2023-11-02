@@ -3,63 +3,12 @@ from Speect_Text import final_convert
 from DysarthriaEmotion import getEmotion
 from DialogueActs import get_DialogueAct_Text
 from Generate_Ontology import writeTriple, writeOntology
-import os
+from Latest_File import getLatestFile_Text,getLatestFile_Audio
+from Pitch_and_Volume import plotVolumeInTime,get_volume_in_time,getPitch,getAverageVolumeInTime
 
 DIRNAME_AUDIO = "Log_PhD/active_listener/audio"
 DIRNAME_TEXT = "Log_PhD/active_listener/text"
 CSV_FILE_TRIPLES = 'Log_PhD/dynamic_workspace/all_triples_without_EDA.csv'
-
-
-def getLatestFile_Audio(directory):
-    # Get a list of all files in the directory
-    file_list = os.listdir(directory)
-
-    # Initialize variables to keep track of the latest timestamp and filename
-    latest_timestamp = None
-    latest_filename = None
-
-    # Iterate through the files in the directory
-    for filename in file_list:
-        if filename.endswith('.wav'):
-            # Extract the timestamp from the filename
-            timestamp_str = filename.split('.')[0]  # Remove the ".wav" extension
-            timestamp = timestamp_str.replace('_', ' ')
-
-            # Compare the timestamp with the latest one found so far
-            if latest_timestamp is None or timestamp > latest_timestamp:
-                latest_timestamp = timestamp
-                latest_filename = filename
-
-    # Print the latest filename
-    lname = directory + "/" + latest_filename
-    print("The file with the latest timestamp is:", lname)
-    return lname
-
-
-def getLatestFile_Text(directory):
-    # Get a list of all files in the directory
-    file_list = os.listdir(directory)
-
-    # Initialize variables to keep track of the latest timestamp and filename
-    latest_timestamp = None
-    latest_filename = None
-
-    # Iterate through the files in the directory
-    for filename in file_list:
-        if filename.endswith('.txt'):
-            # Extract the timestamp from the filename
-            timestamp_str = filename.split('.')[0]  # Remove the ".txt" extension
-            timestamp = timestamp_str.replace('_', ' ')
-
-            # Compare the timestamp with the latest one found so far
-            if latest_timestamp is None or timestamp > latest_timestamp:
-                latest_timestamp = timestamp
-                latest_filename = filename
-
-    # Print the latest filename
-    print("The file with the latest timestamp is:", latest_filename)
-    lname = directory + "/" + latest_filename
-    return lname
 
 
 def readText(file_path):
@@ -76,7 +25,7 @@ def readText(file_path):
 
 
 ###############################
-# FROM THIS POINT WE CONTROL THE SCRIPTS FROM OUTSIDE
+# FROM THIS POINT ON, WE CONTROL THE SCRIPTS FROM OUTSIDE
 ############################
 
 print("###############################################\n START TALKING\n###############################################\n")
@@ -106,8 +55,14 @@ writeTriple(readText(getLatestFile_Text(DIRNAME_TEXT)))
 print("_________________________________________________________________________________________________________________\n")
 
 print("###############################################\n BUIDLING SLIM ONTOLOGY (Without EDA)\n###############################################\n")
-# 6. Ontology without EDA
+# 6. Ontology with EDA
 writeOntology(CSV_FILE_TRIPLES)
 print("_________________________________________________________________________________________________________________\n")
 
-# 7. Ontology with EDA
+print("###############################################\n SHOW PITCH, VOLUME AND PLOTTING AUDIO VOLUME IN TIME\n###############################################\n")
+# 7. Get Volume Plot
+getPitch(getLatestFile_Audio(DIRNAME_AUDIO))
+getAverageVolumeInTime(getLatestFile_Audio(DIRNAME_AUDIO))
+plotVolumeInTime(getLatestFile_Audio(DIRNAME_AUDIO))
+
+print("_________________________________________________________________________________________________________________\n")

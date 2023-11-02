@@ -8,6 +8,13 @@ from pandas import *
 from numpy import nan
 from rdflib import Graph, Namespace, URIRef, Literal, RDF, XSD, FOAF
 from spotlight import SpotlightException, annotate
+from DysarthriaEmotion import getEmotion
+from DialogueActs import get_DialogueAct_Text, read_text_file
+from Latest_File import getLatestFile_Text, getLatestFile_Audio
+from Pitch_and_Volume import getPitchVerdict, getVolumeInTimeVerdict
+
+DIRNAME_AUDIO = "Log_PhD/active_listener/audio"
+DIRNAME_TEXT = "Log_PhD/active_listener/text"
 
 nlp = spacy.load('en_core_web_sm')
 SERVER = "https://api.dbpedia-spotlight.org/en/annotate"
@@ -19,10 +26,12 @@ pd.set_option('display.max_colwidth', 200)
 
 CSV_FILE_TRIPLES = 'Log_PhD/dynamic_workspace/all_triples_without_EDA.csv'
 ONTOLOGY_FILE = 'Log_PhD/dynamic_workspace/dysarthria_ontology.ttl'
+COMPLETE_ONTOLOGY_FILE = 'Log_PhD/dynamic_workspace/complete_dysarthria_ontology.ttl'
 
 g = Graph()
 ex = Namespace("http://dysarthria.org/")
 g.bind("ex", ex)
+
 
 def get_relation(sent):
     doc = nlp(sent)
@@ -149,7 +158,7 @@ def annotate_entity(entity, filters={'types': 'DBpedia:Person'}):
 
 # Function that prepares the values to be added to the graph as a URI or Literal
 def prepareValue(row):
-    if row == None:  # none type
+    if row is None:  # none type
         value = Literal(row)
     elif isinstance(row, str) and re.match(r'\d{4}-\d{2}-\d{2}', row):  # date
         value = Literal(row, datatype=XSD.date)
@@ -166,32 +175,46 @@ def prepareValue(row):
 
 
 # Convert the non-semantic CSV dataset into a semantic RDF
-def csv_to_rdf(df):
-
+def writeOntology(file):
+    df = read_csv(file)
+    # Replaces all instances of nan to None type with numpy's nan
+    df = df.replace(nan, None)
     for index, row in df.iterrows():
         id = URIRef(ex + "dysarthria_" + str(index))
         subject = prepareValue(row["the_subject"])
         relation = prepareValue(row["relation"])
         the_object = prepareValue(row["object"])
+        emotion = prepareValue(getEmotion(getLatestFile_Audio(DIRNAME_AUDIO)))
+        eda = prepareValue(get_DialogueAct_Text(getLatestFile_Text(DIRNAME_TEXT)))
+        pitch = prepareValue(getPitchVerdict(getLatestFile_Audio(DIRNAME_AUDIO)))
+        volume = prepareValue(getVolumeInTimeVerdict(getLatestFile_Audio(DIRNAME_AUDIO)))
+
 
         # Adds the triples to the graph
         g.add((id, RDF.type, ex.Discourse))
         g.add((id, ex.person_thing, subject))
         g.add((id, ex.relation, relation))
         g.add((id, ex.the_object, the_object))
+        g.add((id, ex.emotion, emotion))
+        g.add((id, ex.EDA, eda))
+        g.add((id, ex.pitch, pitch))
+        g.add((id, ex.volume, volume))
+        g.serialize(destination=ONTOLOGY_FILE, format='turtle')
+        print(g.serialize())
+        return g.serialize()
 
 
-def writeOntology(csvfile_with_triples):
-    # Pandas' read_csv function to load finale_triples.csv
-    df = read_csv(csvfile_with_triples)
-    # Replaces all instances of nan to None type with numpy's nan
-    df = df.replace(nan, None)
-    csv_to_rdf(df)
-    print(g.serialize())
-    g.serialize(destination=ONTOLOGY_FILE, format='turtle')
-    return g.serialize()
+# def writeOntology(csvfile_with_triples):
+#     # Pandas' read_csv function to load finale_triples.csv
+#     df = read_csv(csvfile_with_triples)
+#     # Replaces all instances of nan to None type with numpy's nan
+#     df = df.replace(nan, None)
+#     csv_to_rdf(df)
+#     print(g.serialize())
+#     g.serialize(destination=ONTOLOGY_FILE, format='turtle')
+#     return g.serialize()
 
 
 if __name__ == '__main__':
-    writeTriple("It also provides for funds to clear slums and help colleges build dormitories")
+    # writeTriple("It also provides for funds to clear slums and help colleges build dormitories")
     writeOntology(CSV_FILE_TRIPLES)

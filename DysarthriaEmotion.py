@@ -25,18 +25,23 @@ def extract_feature(file_name, **kwargs):
             stft = np.abs(librosa.stft(X))
         result = np.array([])
         if mfcc:
+            # noinspection PyUnresolvedReferences
             mfccs = np.mean(librosa.feature.mfcc(y=X, sr=sample_rate, n_mfcc=40).T, axis=0)
             result = np.hstack((result, mfccs))
         if chroma:
+            # noinspection PyUnresolvedReferences
             chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T, axis=0)
             result = np.hstack((result, chroma))
         if mel:
+            # noinspection PyUnresolvedReferences
             mel = np.mean(librosa.feature.melspectrogram(y=X, sr=sample_rate).T, axis=0)
             result = np.hstack((result, mel))
         if contrast:
+            # noinspection PyUnresolvedReferences
             contrast = np.mean(librosa.feature.spectral_contrast(S=stft, sr=sample_rate).T, axis=0)
             result = np.hstack((result, contrast))
         if tonnetz:
+            # noinspection PyUnresolvedReferences
             tonnetz = np.mean(librosa.feature.tonnetz(y=librosa.effects.harmonic(X), sr=sample_rate).T, axis=0)
             result = np.hstack((result, tonnetz))
     return result

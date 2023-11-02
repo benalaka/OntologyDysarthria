@@ -3,10 +3,9 @@ import nltk
 import joblib
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import classification_report
 
-nltk.download('nps_chat')
+
+# nltk.download('nps_chat')
 posts = nltk.corpus.nps_chat.xml_posts()
 
 posts_text = [post.text for post in posts]
@@ -58,7 +57,7 @@ def read_text_file(file_path):
 
 
 # 2: Then we get the dialogue act
-def get_DialogueAct_Audio(text):
+def get_DialogueAct_Audio(file):
     # get prediction
     prediction = loaded_gb.predict(vectorizer.transform([read_text_file(file)]))
     prediction_text = prediction[0]
