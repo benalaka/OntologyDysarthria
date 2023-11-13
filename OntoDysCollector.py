@@ -2,7 +2,7 @@ from ActiveListener import StartTalking
 from Speect_Text import final_convert
 from DysarthriaEmotion import getEmotion
 from DialogueActs import get_DialogueAct_Text
-from Generate_Ontology import writeTriple, writeOntology
+from Generate_Ontology import writeTriple, writeFullOntology, write_Semantic_emotional_Projection_Ontology,write_Semantic_dialogue_act_Projection_Ontology
 from Latest_File import getLatestFile_Text,getLatestFile_Audio
 from Pitch_and_Volume import plotVolumeInTime,get_volume_in_time,getPitch,getAverageVolumeInTime
 
@@ -54,13 +54,26 @@ print("###############################################\n EXTRACTING SLIM TRIPLES
 writeTriple(readText(getLatestFile_Text(DIRNAME_TEXT)))
 print("_________________________________________________________________________________________________________________\n")
 
-print("###############################################\n BUIDLING SLIM ONTOLOGY (Without EDA)\n###############################################\n")
-# 6. Ontology with EDA
-writeOntology(CSV_FILE_TRIPLES)
+print("###############################################\n BUIDLING FULL ONTOLOGY (With EDA and Speech Patterns)\n###############################################\n")
+# 6. Full Ontology with EDA
+writeFullOntology(CSV_FILE_TRIPLES)
+print("_________________________________________________________________________________________________________________\n")
+
+print("###############################################\n BUIDLING SLIM ONTOLOGY (With Emotion Only)\n###############################################\n")
+# 7. In case the subject is missing and the EMOTION is present, call this function the ontology that will be the candidate for Situational-Semantic Projection (REMEMBER TO HAVE THIS
+# AND THE NEXT NUMBER IN ONE FUNCTION THAT QUERIES THE ONTOLOGY TO CHECK FOR MISSING SUBJECT, EMOTION, OBJECT, DIALOGUE ACT ETC THEN WRITES TO THE APPROPRIATE FILE)
+write_Semantic_emotional_Projection_Ontology(CSV_FILE_TRIPLES)
+print("_________________________________________________________________________________________________________________\n")
+
+print("###############################################\n BUIDLING SLIM ONTOLOGY (With Dialogue Act Only)\n###############################################\n")
+# 8. In case the subject is missing and the DIALOGUE ACT is present, call this function the ontology that will be the candidate for Situational-Semantic Projection
+# (REMEMBER TO HAVE THIS
+# # AND THE NEXT NUMBER IN ONE FUNCTION THAT QUERIES THE ONTOLOGY TO CHECK FOR MISSING SUBJECT, EMOTION, OBJECT, DIALOGUE ACT ETC THEN WRITES TO THE APPROPRIATE FILE)
+write_Semantic_dialogue_act_Projection_Ontology(CSV_FILE_TRIPLES)
 print("_________________________________________________________________________________________________________________\n")
 
 print("###############################################\n SHOW PITCH, VOLUME AND PLOTTING AUDIO VOLUME IN TIME\n###############################################\n")
-# 7. Get Volume Plot
+# 9. Get Volume Plot
 getPitch(getLatestFile_Audio(DIRNAME_AUDIO))
 getAverageVolumeInTime(getLatestFile_Audio(DIRNAME_AUDIO))
 plotVolumeInTime(getLatestFile_Audio(DIRNAME_AUDIO))

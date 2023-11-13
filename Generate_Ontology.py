@@ -25,12 +25,19 @@ matcher = Matcher(nlp.vocab)
 pd.set_option('display.max_colwidth', 200)
 
 CSV_FILE_TRIPLES = 'Log_PhD/dynamic_workspace/all_triples_without_EDA.csv'
+UNIVERSAL_CSV_FILE_TRIPLES = 'Log_PhD/ontology/universal_triples_without_EDA.csv'
 ONTOLOGY_FILE = 'Log_PhD/dynamic_workspace/dysarthria_ontology.ttl'
 COMPLETE_ONTOLOGY_FILE = 'Log_PhD/dynamic_workspace/complete_dysarthria_ontology.ttl'
+SEMANTIC_PROJECTION_ONTOLOGY = 'Log_PhD/dynamic_workspace/semantic_projection_ontology.ttl'
+MY_TXT_OUT = 'Log_PhD/ontology/staged_sentences.txt'
 
 g = Graph()
-ex = Namespace("http://dysarthria.org/")
-g.bind("ex", ex)
+ex = Namespace("http://example.org/")
+
+g.bind("ns1", ex)
+
+# Define the ex namespace
+ex = Namespace("http://example.org/")
 
 
 def get_relation(sent):
@@ -175,7 +182,7 @@ def prepareValue(row):
 
 
 # Convert the non-semantic CSV dataset into a semantic RDF
-def writeOntology(file):
+def writeFullOntology(file):
     df = read_csv(file)
     # Replaces all instances of nan to None type with numpy's nan
     df = df.replace(nan, None)
@@ -188,7 +195,6 @@ def writeOntology(file):
         eda = prepareValue(get_DialogueAct_Text(getLatestFile_Text(DIRNAME_TEXT)))
         pitch = prepareValue(getPitchVerdict(getLatestFile_Audio(DIRNAME_AUDIO)))
         volume = prepareValue(getVolumeInTimeVerdict(getLatestFile_Audio(DIRNAME_AUDIO)))
-
 
         # Adds the triples to the graph
         g.add((id, RDF.type, ex.Discourse))
@@ -215,6 +221,73 @@ def writeOntology(file):
 #     return g.serialize()
 
 
+def write_Semantic_emotional_Projection_Ontology(file):
+    df = read_csv(file)
+    # Replaces all instances of nan to None type with numpy's nan
+    df = df.replace(nan, None)
+    for index, row in df.iterrows():
+        emotion = prepareValue(getEmotion(getLatestFile_Audio(DIRNAME_AUDIO)))
+        id = URIRef(ex + "dysarthria_" + str(index))
+        subject = prepareValue(emotion)
+        relation = prepareValue(row["relation"])
+        the_object = prepareValue(row["object"])
+
+        # Adds the triples to the graph
+        g.add((id, RDF.type, ex.Discourse))
+        g.add((id, ex.person_thing, Literal(subject.split('/')[-1])))
+        g.add((id, ex.relation, Literal(relation.split('/')[-1])))
+        g.add((id, ex.the_object, the_object))
+
+        g.serialize(destination=SEMANTIC_PROJECTION_ONTOLOGY, format='turtle')
+        print(g.serialize())
+        return g.serialize()
+
+
+def write_Semantic_dialogue_act_Projection_Ontology(file):
+    df = read_csv(file)
+    # Replaces all instances of nan to None type with numpy's nan
+    df = df.replace(nan, None)
+    for index, row in df.iterrows():
+        eda = prepareValue(get_DialogueAct_Text(getLatestFile_Text(DIRNAME_TEXT)))
+        id = URIRef(ex + "dysarthria_" + str(index))
+        subject = prepareValue(eda)
+        relation = prepareValue(row["relation"])
+        the_object = prepareValue(row["object"])
+
+        # Adds the triples to the graph
+        g.add((id, RDF.type, ex.Discourse))
+        g.add((id, ex.person_thing, Literal(subject.split('/')[-1])))
+        g.add((id, ex.relation, Literal(relation.split('/')[-1])))
+        g.add((id, ex.the_object, the_object))
+
+        g.serialize(destination=SEMANTIC_PROJECTION_ONTOLOGY, format='turtle')
+        print(g.serialize())
+        return g.serialize()
+
+def stage_Sentence_for_Semantic_emotion_projection():
+    g = Graph()
+    g.parse(ONTOLOGY_FILE, format="ttl")
+
+
+    # Define the namespace
+    ns1 = Namespace("http://example.org/")
+
+    # Extract the content of ns1:person_thing
+    person_thing = str(g.value(subject=ns1.dysarthria_0, predicate=ns1.person_thing))
+    relation = str(g.value(subject=ns1.dysarthria_0, predicate=ns1.relation))
+    the_object = str(g.value(subject=ns1.dysarthria_0, predicate=ns1.the_object))
+
+    the_object  = the_object.replace("__", " ")
+
+    # Write the content to "me.txt"
+    with open(MY_TXT_OUT, "w") as txt_file:
+        txt_file.write(person_thing+" "+relation+" "+the_object.split("/")[-1])
+
+
+
+
 if __name__ == '__main__':
     # writeTriple("It also provides for funds to clear slums and help colleges build dormitories")
-    writeOntology(CSV_FILE_TRIPLES)
+    # writeFullOntology(CSV_FILE_TRIPLES)
+    # write_Semantic_emotional_Projection_Ontology(CSV_FILE_TRIPLES)
+    stage_Sentence_for_Semantic_emotion_projection()
