@@ -8,6 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from rdflib import Graph, Namespace
 import seaborn as sns
 import matplotlib.pyplot as plt
+from Query_Ontologies import Query_Ontology
 
 # TTL_DESTINATION_PERSON_MISSING = 'Log_PhD/ontology/no_person_thing_short.ttl'
 SEMANTIC_PROJECTION_ONTOLOGY = 'Log_PhD/dynamic_workspace/semantic_projection_ontology.ttl'
@@ -19,6 +20,7 @@ FINAL_TXT_OUT = '/content/drive/MyDrive/Log_PhD/Ontology/final_staged_sentences.
 INTENT_SOURCE_CSV = '/content/drive/MyDrive/Log_PhD/Ontology/bert_intent.csv'
 ONTOLOGY_FILE = 'Log_PhD/dynamic_workspace/dysarthria_ontology.ttl'
 LARGE_ONTOLOGY_FILE = 'Log_PhD/ontology/no_person_thing.ttl'
+CSV_OUT_FOR_LINK_PREDICTION = 'Log_PhD/dynamic_workspace/link_pred_candidates.csv'
 
 # Name of the serialized word vectors file
 cached_vectors_file = "Log_PhD/semantic_projection/word_vectors.pkl"
@@ -40,7 +42,45 @@ def get_missing_subject_anchor(missing_person_file):
 
     anchor_1 = None  # Default value
     anchor_2 = None  # Default value
-    size = None #Default
+    size = None  # Default
+
+    # define the anchors based on placeholders
+    if "happy" in [str(result[0]) for result in results] or "sad" in [str(result[0]) for result in
+                                                                      results] or "angry" in [str(result[0]) for result
+                                                                                              in results]:
+        anchor_1 = word_vectors['happy']
+        anchor_2 = word_vectors['angry']
+        # anchor words for addition and subtraction
+        size = {
+            'add': ['happy', 'joyful', 'excited'],
+            'subtract': ['sad', 'gloomy', 'angry']
+        }
+    elif "statement" in [str(result[0]) for result in results] or "emphasis" in [str(result[0]) for result in
+                                                                                 results] or "whquestion" in [
+        str(result[0]) for result in results] or "ynquestion" in [str(result[0]) for result in results]:
+        anchor_1 = word_vectors['statement']
+        anchor_2 = word_vectors['question']
+        # anchor words for addition and subtraction
+        size = {
+            'add': ['statement', 'neutral', 'emphasis'],
+            'subtract': ['clarification', 'concern', 'question']
+        }
+    return anchor_1, anchor_2, size
+
+
+def get_missing_object_anchor(missing_person_file):
+    g = Graph()
+    g.parse(missing_person_file, format="ttl")
+
+    # Define the namespace
+    ns1 = Namespace("http://example.org/")
+    # Query the namespace values
+    query = f"SELECT ?value WHERE {{ ?x ns1:the_object ?value }}"
+    results = g.query(query, initNs={"ns1": ns1})
+
+    anchor_1 = None  # Default value
+    anchor_2 = None  # Default value
+    size = None  # Default
 
     # define the anchors based on placeholders
     if "happy" in [str(result[0]) for result in results] or "sad" in [str(result[0]) for result in
@@ -222,9 +262,11 @@ def get_Universal_Data_Frame():
     df_bigger = pd.DataFrame(order_terms_per_direction(LARGE_ONTOLOGY_FILE))
     return df_bigger
 
+
 def get_smaller_Data_Frame():
     df_smaller = pd.DataFrame(get_df_simsi_sorted())
     return df_smaller
+
 
 def get_triple(staged_file_in):
     with open(staged_file_in, 'r') as file:
@@ -233,6 +275,7 @@ def get_triple(staged_file_in):
             words = fullsentence.split()
             fresh_triple = [word.lower() for word in words]
             return fresh_triple
+
 
 def EDA(staged_file_in):
     with open(staged_file_in, 'r') as file:
@@ -247,9 +290,11 @@ def get_df_simsi_sorted():
     df_simsi_sorted = df_simsi.sort_values('direction')
     return df_simsi_sorted
 
+
 def generate_semantic_projection():
     closeness = 0.01
-
+    r = Query_Ontology(SEMANTIC_PROJECTION_ONTOLOGY)[0]
+    o = Query_Ontology(SEMANTIC_PROJECTION_ONTOLOGY)[1]
     # Loop through the smaller dataframe
     matched_terms = []
     for idx_s, row_s in get_smaller_Data_Frame().iterrows():
@@ -286,9 +331,23 @@ def generate_semantic_projection():
     # final_df = df_sorted.head(7)
     final_df1 = df_sorted.head(8)
     final_df = final_df1.tail(4)
-
-    # Print the sorted DataFrame (optional)
+    print("SEMANTIC PROJECTION COMPLETE...BELOW ARE CANDIDATE WORDS (alongside similarity scores) FROM SEMANTIC PROJECTION")
     print(final_df)
+    print("BELOW ARE CANDIDATE TRIPLES FOR ONTOLOGY LEARNING (LINK PREDICTION)")
+    # Start writing to csv
+    headerList = ["s", "p", "o"]
+    with open(CSV_OUT_FOR_LINK_PREDICTION, 'w', newline='') as f:
+        writerObj = csv.writer(f)
+        writerObj.writerow(headerList)
+
+    for item in final_df['term']:
+        print(item,r,o)
+        with open(CSV_OUT_FOR_LINK_PREDICTION, 'a', newline='') as f:
+            writerObj = csv.writer(f)
+            writerObj.writerow([item, r, o])
+
+
+
 
 # check if set of triples returned are nouns (FOR LATER USE)
 def is_noun(word):
@@ -299,8 +358,8 @@ def is_noun(word):
     # Check if the POS tag is a noun
     return pos_tag.startswith('NN')
 
+
 if __name__ == '__main__':
     # plot_Semantic_Direction(TTL_DESTINATION_PERSON_MISSING)
     # print(order_terms_per_direction(SEMANTIC_PROJECTION_ONTOLOGY))
     generate_semantic_projection()
-

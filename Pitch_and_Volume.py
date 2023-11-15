@@ -74,7 +74,7 @@ def getVolumeInTimeVerdict(file):
     elif 0.40 <= getAverageVolumeInTime(file) <= 1.0:
         verdict = "Maximum"
     else:
-        verdict = "Undefined"
+        verdict = "Volume"
     return verdict
 
 

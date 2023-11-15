@@ -4,7 +4,8 @@ from DysarthriaEmotion import getEmotion
 from DialogueActs import get_DialogueAct_Text
 from Generate_Ontology import writeTriple, writeFullOntology, write_Semantic_emotional_Projection_Ontology,write_Semantic_dialogue_act_Projection_Ontology
 from Latest_File import getLatestFile_Text,getLatestFile_Audio
-from Pitch_and_Volume import plotVolumeInTime,get_volume_in_time,getPitch,getAverageVolumeInTime
+from Pitch_and_Volume import plotVolumeInTime,getPitch,getAverageVolumeInTime,getVolumeInTimeVerdict,getPitchVerdict
+from Semantic_Projection_Train import generate_semantic_projection
 
 DIRNAME_AUDIO = "Log_PhD/active_listener/audio"
 DIRNAME_TEXT = "Log_PhD/active_listener/text"
@@ -75,7 +76,15 @@ print("_________________________________________________________________________
 print("###############################################\n SHOW PITCH, VOLUME AND PLOTTING AUDIO VOLUME IN TIME\n###############################################\n")
 # 9. Get Volume Plot
 getPitch(getLatestFile_Audio(DIRNAME_AUDIO))
+print("Pitch Verdict: "+getPitchVerdict(getLatestFile_Audio(DIRNAME_AUDIO)))
 getAverageVolumeInTime(getLatestFile_Audio(DIRNAME_AUDIO))
+print("Volume Verdict: "+getVolumeInTimeVerdict(getLatestFile_Audio(DIRNAME_AUDIO)))
 plotVolumeInTime(getLatestFile_Audio(DIRNAME_AUDIO))
+
+print("_________________________________________________________________________________________________________________\n")
+
+print("###############################################\n PERFORM SEMANTIC PROJECTION\n###############################################\n")
+# 10. Generate Semantic Projections
+generate_semantic_projection()
 
 print("_________________________________________________________________________________________________________________\n")

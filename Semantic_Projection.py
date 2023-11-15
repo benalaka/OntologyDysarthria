@@ -10,7 +10,6 @@ FINAL_TXT_OUT = 'Log_PhD/ontology/final_staged_sentences.txt'
 INTENT_SOURCE_CSV = '/content/drive/MyDrive/Log_PhD/Ontology/bert_intent.csv'
 
 
-
 def getTriple(filein):
     # Reorder the terms based on direction
     with open(filein, 'r') as file:
@@ -43,6 +42,7 @@ def getEDA(filein):
             else:
                 print("No words found in the line.")
     return EDA
+
 
 if __name__ == '__main__':
     print(getSentence(MY_TXT_IN))

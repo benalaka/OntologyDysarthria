@@ -281,13 +281,13 @@ def stage_Sentence_for_Semantic_emotion_projection():
 
     # Write the content to "me.txt"
     with open(MY_TXT_OUT, "w") as txt_file:
-        txt_file.write(person_thing+" "+relation+" "+the_object.split("/")[-1])
+        txt_file.write(person_thing.split("/")[-1]+" "+relation.split("/")[-1]+" "+the_object.split("/")[-1])
 
 
 
 
 if __name__ == '__main__':
     # writeTriple("It also provides for funds to clear slums and help colleges build dormitories")
-    # writeFullOntology(CSV_FILE_TRIPLES)
+    writeFullOntology(CSV_FILE_TRIPLES)
     # write_Semantic_emotional_Projection_Ontology(CSV_FILE_TRIPLES)
     stage_Sentence_for_Semantic_emotion_projection()
